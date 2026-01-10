@@ -7,7 +7,7 @@
 
 // ##### Área de definição de funções auxiliares
 // Função auxiliar para se mover na horizontal ou vertical
-void executar_mov_vert_hori(char direcao){
+void printar_mov_vert_hori(char direcao){
     switch (direcao)
         {
         case 'd':
@@ -33,7 +33,7 @@ void executar_mov_vert_hori(char direcao){
 }
 
 // Função auxiliar para se mover na diagonal
-void executar_mov_diag(char direcao_cb, char direcao_ed){
+void printar_mov_diag(char direcao_cb, char direcao_ed){
     switch (direcao_cb)
         {
         case 'c':
@@ -60,22 +60,40 @@ void executar_mov_diag(char direcao_cb, char direcao_ed){
         }
 }
 
+// Definicao do movimento de cada peca usando funcoes recursivas
+
+// Mover horizontal e verticalmente, valido para Torre e Rainha (desconsiderando movimento diag.)
+void mover_vert_hori(char direcao, unsigned short num_casas){
+    if(num_casas > 0){
+        printar_mov_vert_hori(direcao);
+        mover_vert_hori(direcao, num_casas-1);
+    }
+}
+
+// Mover o Bispo (diagonalmente)
+void mover_diag(char direcao_cb, char direcao_ed, unsigned short num_casas){
+    if(num_casas > 0){
+        printar_mov_diag(direcao_cb, direcao_ed);
+        mover_diag(direcao_cb, direcao_ed, num_casas-1);
+    }
+}
+
+// Mover o Cavalo (em 'L')
+void mover_cavalo(char direcao_2, char direcao_1, unsigned short var_controle){
+    if(var_controle > 0){
+        printar_mov_vert_hori(direcao_2);
+        if(var_controle == 1){
+            printar_mov_vert_hori(direcao_1);
+        }
+        mover_cavalo(direcao_2, direcao_1, var_controle-1);
+    }
+}
+
 // Função principal (main)
 
 int main() {
 
-    // Nível Aventureiro - Movimentação do Cavalo
-    // Sugestão: Utilize loops aninhados para simular a movimentação do Cavalo em L.
-    // Um loop pode representar a movimentação horizontal e outro vertical.
-
-    // Nível Mestre - Funções Recursivas e Loops Aninhados
-    // Sugestão: Substitua as movimentações das peças por funções recursivas.
-    // Exemplo: Crie uma função recursiva para o movimento do Bispo.
-
-    // Sugestão: Implemente a movimentação do Cavalo utilizando loops com variáveis múltiplas e condições avançadas.
-    // Inclua o uso de continue e break dentro dos loops.
-
-    // Defina as direçõees
+    // Defina as direções
     char cima = 'c';
     char baixo = 'b';
     char direita = 'd';
@@ -84,9 +102,11 @@ int main() {
     // Declare as variáveis de direção da peça escolhida pelo usuário
     char direcao_torre;
     char direcao_rainha;
+    char direcao_rainha_cb; // para verificar se o usuario quer mover a rainha diag.
+    char direcao_rainha_ed;
     char direcao_bispo_cb; // cima ou baixo
     char direcao_bispo_ed; // esquerda ou direita
-    char direcao_cavalo_3; // 3 casas verticais ou horizontais do cavalo
+    char direcao_cavalo_2; // 2 casas verticais ou horizontais do cavalo
     char direcao_cavalo_1; // 1 casa perpendicular
 
     
@@ -123,9 +143,8 @@ int main() {
                 break;
             
             case 3:
-                // Para simplificar, limite o movimento da Rainha a vertical ou horizontal
-                // TODO Implementar o movimento real da Rainha (requer estrutura de dados composta)
-                printf("Movimenta-se varias casas para a esquerda ou direita.\n");
+                printf("Movimenta-se varias casas para a esquerda ou direita, ou diagonalmente.\n");
+                printf("Caso diagonal, escolha a combinação 'c' ou 'b' com 'e' ou 'd', como com o Bispo.\n");
                 printf("Exemplo de resposta para a Rainha, 6 casas para esquerda: e 6\n");
                 break;
             
@@ -158,11 +177,13 @@ int main() {
             scanf(" %c %hu", &direcao_torre, &num_casas_torre); // Adicione espaco antes de %c para consumir algum espaco remanescente
             printf("\n");
 
-            // Defina o movimento da Torre
-            while(num_casas_torre > 0){
-                executar_mov_vert_hori(direcao_torre);
+            // Defina o movimento da Torre (versao interativa)
+            /** while(num_casas_torre > 0){
+                printar_mov_vert_hori(direcao_torre);
                 num_casas_torre--;
             }
+            */
+            mover_vert_hori(direcao_torre, num_casas_torre);
             printf("\n### Finalizado o movimento da Torre ###\n\n");
             break;
         
@@ -171,46 +192,69 @@ int main() {
             scanf(" %c %c %hu", &direcao_bispo_cb, &direcao_bispo_ed, &num_casas_bispo);
             printf("\n");
 
-            // Defina o movimento do Bispo
+            // Defina o movimento do Bispo (versao interativa)
+            /**
             do {
-                executar_mov_diag(direcao_bispo_cb, direcao_bispo_ed);
+                printar_mov_diag(direcao_bispo_cb, direcao_bispo_ed);
                 num_casas_bispo--;
             }
             while(num_casas_bispo > 0);
+            */
+            mover_diag(direcao_bispo_cb, direcao_bispo_ed, num_casas_bispo);
 
             printf("\n### Finalizado o movimento do Bispo ###\n\n");
             break;
         
         case 3:
             // Para simplificar, limite o movimento da Rainha a vertical ou horizontal
-            printf("Movimente a Rainha: ");
-            scanf(" %c %hu", &direcao_rainha, &num_casas_rainha);
-            printf("\n");
+            unsigned short escolha_mov_diag;
+            printf("Deseja mover a Rainha na diagonal?\n");
+            printf("(1)\t\tSim\n(0)\t\tNao\n");
+            printf("Escolha: ");
+            scanf(" %hu", &escolha_mov_diag);
+            if(escolha_mov_diag == 0){
+                printf("Movimente a Rainha: ");
+                scanf(" %c %hu", &direcao_rainha, &num_casas_rainha);
+                printf("\n");
 
-            // Defina o movimento da Rainha
-            for(unsigned short i=num_casas_rainha; i > 0; i--){
-                executar_mov_vert_hori(direcao_rainha);
+                mover_vert_hori(direcao_rainha, num_casas_rainha);
+            } else {
+                printf("Movimente a Rainha: ");
+                scanf(" %c %c %hu", &direcao_rainha_cb, &direcao_rainha_ed, &num_casas_rainha);
+                printf("\n");
+
+                mover_diag(direcao_rainha_cb, direcao_rainha_ed, num_casas_rainha);
             }
+            
 
+            // Defina o movimento da Rainha (versao interativa)
+            /**
+            for(unsigned short i=num_casas_rainha; i > 0; i--){
+                printar_mov_vert_hori(direcao_rainha);
+            }
+            */
             printf("\n### Finalizado o movimento da Rainha ###\n\n");
             break;
         
         case 4:
             printf("Movimente o Cavalo: ");
-            scanf(" %c %c", &direcao_cavalo_3, &direcao_cavalo_1);
+            scanf(" %c %c", &direcao_cavalo_2, &direcao_cavalo_1);
             printf("\n");
 
-            // Defina o movimento do Cavalo
+            // Defina o movimento do Cavalo (versao interativa)
+            /**
             unsigned short stop;    // Condição de parada para o loop interno
             for (unsigned short i = 2; i > 0; i--){
-                // Poderia ser um simples if(i == 0) then executar_mov_vert_hori(direcao_cavalo_1)
+                // Poderia ser um simples if(i == 0) then printar_mov_vert_hori(direcao_cavalo_1)
                 stop = 1;
                 while(stop < 2){
-                    executar_mov_vert_hori(direcao_cavalo_3);   // "Perna maior" do 'L'
+                    printar_mov_vert_hori(direcao_cavalo_3);   // "Perna maior" do 'L'
                     stop++;
                 }
             }
-            executar_mov_vert_hori(direcao_cavalo_1);           // "Perna menor" do 'L'
+            printar_mov_vert_hori(direcao_cavalo_1);           // "Perna menor" do 'L'
+            */
+            mover_cavalo(direcao_cavalo_2, direcao_cavalo_1, 2);
             printf("\n### Finalizado o movimento do Cavalo ###\n\n");
             break;
         
